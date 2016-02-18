@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     TextView tv;
     BluetoothAdapter mBluetoothAdapter;
     Set<BluetoothDevice> pairedDevices;
+    int rssi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,15 +34,15 @@ public class MainActivity extends AppCompatActivity {
             tv.setText("No Bluetooth for you :(");
         }
         else {
-            enableBluetooth();
-            mHandler.postDelayed(new Runnable() {
-                public void run() {
+            //enableBluetooth();
+            //mHandler.postDelayed(new Runnable() {
+                //public void run() {
                     findPairedDevices();
                     IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
                     registerReceiver(mReceiver, filter);
                     mBluetoothAdapter.startDiscovery();
-                }
-            }, 5000);
+                //}
+            //}, 5000);
 
         }
     }
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 if(device.getAddress().equals(foundMacAddress))
-                    Toast.makeText(MainActivity.this,"juhuuu", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this,Integer.toString(rssi), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -74,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Log.d("Device:", device.getName() + device.getAddress() + "\n");
+                rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
+                Log.d("Device:", device.getName() + " " + device.getAddress() + " " +rssi + "\n");
                 checkIfPaired(device.getAddress());
             }
         }

@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ParcelUuid;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -16,6 +17,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,11 +42,31 @@ public class MainActivity extends AppCompatActivity {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mSocket = null;
 
-        tManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-        uuid = tManager.getDeviceId();
-        MY_UUID = UUID.fromString(uuid);
+        uuid ="0000111f-0000-1000-8000-00805f9b34fb";
+/*
+        Method getUuidsMethod = null;
+        try {
+            getUuidsMethod = BluetoothAdapter.class.getDeclaredMethod("getUuids", null);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
 
-        Toast.makeText(MainActivity.this, uuid, Toast.LENGTH_SHORT).show();
+        ParcelUuid[] uuids = new ParcelUuid[0];
+        try {
+            uuids = (ParcelUuid[]) getUuidsMethod.invoke(mBluetoothAdapter, null);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+        for (ParcelUuid uuid: uuids) {
+            Log.d("Device: ", "UUID: " + uuid.getUuid().toString());
+        }
+*/
+        //tManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        //uuid = tManager.getDeviceId();
+        MY_UUID = UUID.fromString(uuid);
 
         if (mBluetoothAdapter == null) {
             tv.setText("No Bluetooth for you :(");
@@ -52,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             //enableBluetooth();
             //mHandler.postDelayed(new Runnable() {
                 //public void run() {
-                    //findPairedDevices();
+                    findPairedDevices();
                     //IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
                     //registerReceiver(mReceiver, filter);
                     //mBluetoothAdapter.startDiscovery();
@@ -78,12 +101,14 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("Socket: ","Socket not created");
                     e1.printStackTrace();
                 }
+                //device.getUuids();
                 try{
                     mSocket.connect();
+                    Log.d("Connect: ", "Connected");
                 } catch(IOException e){
                     try {
                         mSocket.close();
-                        Log.d("Connect: ","Cannot connect");
+                        Log.d("Connect: ", "Cannot connect");
                     } catch (IOException e1) {
                         Log.d("Closed: ","Socket not closed");
                         e1.printStackTrace();
@@ -116,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mReceiver);
-        mBluetoothAdapter.cancelDiscovery();
+        //unregisterReceiver(mReceiver);
+        //mBluetoothAdapter.cancelDiscovery();
     }
 }

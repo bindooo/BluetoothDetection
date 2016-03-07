@@ -36,7 +36,7 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     static final int REQUEST_ENABLE_BT = 1;
-    private Handler mHandler = new Handler();
+    private Handler mHandler;
     TextView tv;
     BluetoothAdapter mBluetoothAdapter;
     BluetoothSocket mSocket;
@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mHandler = new Handler();
         tv = (TextView)findViewById(R.id.textView);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mSocket = null;
@@ -91,18 +92,40 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Current date ", date);
             Log.d("Current time ", time);
 */
-            SendHTTPRequest sr = new SendHTTPRequest();
-            sr.execute(tv);
+//            SendHTTPRequest sr = new SendHTTPRequest();
+//            sr.execute(tv);
             //enableBluetooth();
             //mHandler.postDelayed(new Runnable() {
                 //public void run() {
+            startTaskLoop();
                     //findPairedDevices();
                     //IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
                     //registerReceiver(mReceiver, filter);
                     //mBluetoothAdapter.startDiscovery();
+                    //Log.d("Handler","Task repetition");
                 //}
             //}, 5000);
         }
+    }
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            try {
+
+            } finally {
+                //findPairedDevices();
+                Log.d("Handler","Task repetition");
+                mHandler.postDelayed(mStatusChecker, 5000);
+            }
+        }
+    };
+
+    void startTaskLoop() {
+        mStatusChecker.run();
+    }
+
+    void stopTaskLoop() {
+        mHandler.removeCallbacks(mStatusChecker);
     }
     protected void enableBluetooth() {
         if (!mBluetoothAdapter.isEnabled()) {
@@ -172,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopTaskLoop();
         //unregisterReceiver(mReceiver);
         //mBluetoothAdapter.cancelDiscovery();
     }

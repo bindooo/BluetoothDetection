@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,10 +23,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Set;
@@ -190,11 +193,22 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Current date ", date);
             Log.d("Current time ", time);
 
-            String urlString = "http://balaton-team.com/bringa_send.php?" + date + "%20" + time;
+            String datetime = date + " " + time;
+
+//            String urlString = "http://balaton-team.com/bringa_send.php?" + date + "%20" + time;
+
+            Uri.Builder builder = new Uri.Builder();
+            builder.scheme("http")
+                    .authority("balaton-team.com")
+                    .appendPath("bringa_send.php")
+                    .appendQueryParameter("id", "phu")
+                    .appendQueryParameter("ts", datetime);
+            String myUrl = builder.build().toString();
 
             URL url = null;
             try {
-                url = new URL("http://balaton-team.com/bringa_send.php?2016-03-18%2011:12:13");
+                //url = new URL("http://balaton-team.com/bringa_send.php?id=phu&ts=2016-03-18%2011:12:00");
+                url = new URL(myUrl);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -209,7 +223,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (ProtocolException e) {
                 e.printStackTrace();
             }
-
             // read the response
             try {
                 System.out.println("Response Code: " + conn.getResponseCode());

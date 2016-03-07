@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
         String time;
         Calendar c = Calendar.getInstance();
         SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat timeformat = new SimpleDateFormat("hh:mm:ss");
+        SimpleDateFormat timeformat = new SimpleDateFormat("HH:mm:ss");
         TextView t;
         String responseStr = "fail";
         @Override

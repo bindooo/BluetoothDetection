@@ -148,37 +148,18 @@ public class MainActivity extends AppCompatActivity {
                     .appendQueryParameter("ts", datetime);
             String myUrl = builder.build().toString();
 
-            URL url = null;
+            URL url;
             try {
                 url = new URL(myUrl);
+                HttpURLConnection conn;
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                System.out.println("Response Code: " + conn.getResponseCode());
+                InputStream in;
+                in = new BufferedInputStream(conn.getInputStream());
+                responseStr = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-            }
-            HttpURLConnection conn = null;
-            try {
-                conn = (HttpURLConnection) url.openConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                conn.setRequestMethod("GET");
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            }
-            // read the response
-            try {
-                System.out.println("Response Code: " + conn.getResponseCode());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            InputStream in = null;
-            try {
-                in = new BufferedInputStream(conn.getInputStream());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                responseStr = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView android:id="@+id/loginPageTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10sp"
+        android:layout_alignParentTop="true"
+        android:gravity="center"
+        android:text="Login page"
+        android:textSize="30sp" />
+
+    <TextView android:id="@+id/idTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/idEditText"
+        android:gravity="center"
+        android:text="ID"
+        android:textSize="30sp"/>
+
+    <EditText android:id="@id/idEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10sp"
+        android:layout_above="@+id/passwordTextView"
+        android:inputType="textPersonName" />
+
+    <TextView android:id="@id/passwordTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="Password"
+        android:textSize="30sp"/>
+
+    <EditText android:id="@+id/passwordEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10sp"
+        android:layout_below="@id/passwordTextView"
+        android:inputType="textPassword"/>
+
+    <Button android:id="@+id/loginButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/passwordEditText"
+        android:gravity="center"
+        android:layout_centerHorizontal="true"
+        android:text="Login"/>
+
+</RelativeLayout>

@@ -43,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mSocket = null;
 
-        uuid = "0000111f-0000-1000-8000-00805f9b34fb";
+        uuid = "0000111f-0000-1000-8000-00805f9b34fb";        //phone
+        //uuid = "e0cbf06c-cd8b-4647-bb8a-263b43f0f974";          //PC
         MY_UUID = UUID.fromString(uuid);
 
         if (mBluetoothAdapter == null) {

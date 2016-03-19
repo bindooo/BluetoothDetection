@@ -1,6 +1,7 @@
 package com.faveoffate.bluetoothdetection;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -12,7 +13,6 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
@@ -23,15 +23,16 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class LoginActivity extends AppCompatActivity {
-    EditText id,password,loginEditText;
+    EditText idEditText,passwordEditText,loginEditText;
     Button loginButton;
+    public static final String EXTRA = "extra";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        id = (EditText)findViewById(R.id.idEditText);
-        password = (EditText)findViewById(R.id.passwordEditText);
+        idEditText = (EditText)findViewById(R.id.idEditText);
+        passwordEditText = (EditText)findViewById(R.id.passwordEditText);
         loginButton = (Button)findViewById(R.id.loginButton);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,20 +54,22 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
-                //Toast.makeText(LoginActivity.this,s.toString(),Toast.LENGTH_LONG).show();
-                //final StringBuilder sb = new StringBuilder(s.length());
-                //sb.append(s);
-                //sb.toString();
-                if(s.toString().equals("OK"))
-                    Toast.makeText(LoginActivity.this,"Authentication successful",Toast.LENGTH_LONG).show();
-                else
-                    Toast.makeText(LoginActivity.this,"Authentication failed",Toast.LENGTH_LONG).show();
+                if(loginEditText.getText().toString().contains("NOK")) {
+                    Toast.makeText(LoginActivity.this, "Authentication failed", Toast.LENGTH_LONG).show();
+                }
+
+                else {
+                    Toast.makeText(LoginActivity.this, "Authentication successful", Toast.LENGTH_LONG).show();
+                    Intent i = new Intent(LoginActivity.this, LoggedInActivity.class);
+                    i.putExtra(EXTRA,idEditText.getText().toString());
+                    startActivity(i);
+                }
             }
         });
     }
     protected void login() {
         if(isNetworkAvailable()) {
-            SendLoginInfo sr = new SendLoginInfo(loginEditText, id.getText().toString(), password.getText().toString());
+            SendLoginInfo sr = new SendLoginInfo(loginEditText, idEditText.getText().toString(), passwordEditText.getText().toString());
             sr.execute();
         }
         else

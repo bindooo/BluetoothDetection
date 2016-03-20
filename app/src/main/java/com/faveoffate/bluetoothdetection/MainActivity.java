@@ -3,6 +3,7 @@ package com.faveoffate.bluetoothdetection;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -15,9 +16,9 @@ import android.widget.TextView;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -30,14 +31,21 @@ public class MainActivity extends AppCompatActivity {
     TextView tv;
     BluetoothAdapter mBluetoothAdapter;
     BluetoothSocket mSocket;
-    String uuid;
+    String uuid, user;
     UUID MY_UUID;
     Set<BluetoothDevice> pairedDevices;
+    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        context = getApplicationContext();
+
+        Intent i = getIntent();
+        user = i.getStringExtra(LoggedInActivity.EXTRA);
+
         mHandler = new Handler();
         tv = (TextView) findViewById(R.id.textView);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -101,6 +109,25 @@ public class MainActivity extends AppCompatActivity {
                         e1.printStackTrace();
                     }
                     Log.d("Connect: ", "Disconnected");
+
+                    Calendar c = Calendar.getInstance();
+                    SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
+                    SimpleDateFormat timeformat = new SimpleDateFormat("HH:mm:ss");
+                    String date = dateformat.format(c.getTime());
+                    String time = timeformat.format(c.getTime());
+                    String datetime = date + " " + time;
+                    tv.append(user + " " + datetime);
+                    tv.append("\n");
+
+                    try {
+                        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("timestamps.txt", Context.MODE_PRIVATE));
+                        outputStreamWriter.write(tv.getText().toString());
+                        outputStreamWriter.write("\n");
+                        outputStreamWriter.close();
+                    } catch (IOException e) {
+                        Log.d("Error: ", e.toString());
+                    }
+
                     SendHTTPRequest sr = new SendHTTPRequest();
                     sr.execute(tv);
                 } catch (IOException e) {
@@ -171,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String message) {
             super.onPostExecute(message);
-            t.setText(message);
+            //t.setText(message);
         }
     }
 }

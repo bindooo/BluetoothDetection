@@ -8,18 +8,23 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class LoggedInActivity extends AppCompatActivity {
+    public static final String EXTRA = "extra";
     TextView userTextView;
     Button changeUserButton, startButton;
+    String user;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loggedin);
         Intent i = getIntent();
+        user = i.getStringExtra("user");
+        user = user.replaceAll("(\\r|\\n|\\t)", "");
+
         userTextView = (TextView)findViewById(R.id.userTextView);
         changeUserButton = (Button)findViewById(R.id.changeUserButton);
         startButton = (Button)findViewById(R.id.startButton);
 
-        userTextView.setText(i.getStringExtra(LoginActivity.EXTRA));
+        userTextView.setText(user);
 
         changeUserButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -32,7 +37,8 @@ public class LoggedInActivity extends AppCompatActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(LoggedInActivity.this,MainActivity.class);
+                Intent i = new Intent(LoggedInActivity.this, MainActivity.class);
+                i.putExtra(EXTRA, user);
                 startActivity(i);
             }
         });

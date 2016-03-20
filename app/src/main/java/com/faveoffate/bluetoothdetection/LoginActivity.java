@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,11 +27,13 @@ import java.net.URL;
 public class LoginActivity extends AppCompatActivity {
     EditText idEditText,passwordEditText,loginEditText;
     Button loginButton;
-    public static final String EXTRA = "extra";
+    Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        context = getApplicationContext();
 
         idEditText = (EditText)findViewById(R.id.idEditText);
         passwordEditText = (EditText)findViewById(R.id.passwordEditText);
@@ -60,8 +64,18 @@ public class LoginActivity extends AppCompatActivity {
 
                 else {
                     Toast.makeText(LoginActivity.this, "Authentication successful", Toast.LENGTH_LONG).show();
+
+                    try {
+                        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("user.txt", Context.MODE_PRIVATE));
+                        outputStreamWriter.write(idEditText.getText().toString());
+                        outputStreamWriter.write("\n");
+                        outputStreamWriter.close();
+                    } catch (IOException e) {
+                        Log.d("Error: ", e.toString());
+                    }
+
                     Intent i = new Intent(LoginActivity.this, LoggedInActivity.class);
-                    i.putExtra(EXTRA,idEditText.getText().toString());
+                    i.putExtra("user", idEditText.getText().toString());
                     startActivity(i);
                 }
             }

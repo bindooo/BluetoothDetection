@@ -58,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
-                if(loginEditText.getText().toString().contains("NOK")) {
+                if(loginEditText.getText().toString().contains("NOK") || idEditText.getText().toString().equals("") || passwordEditText.getText().toString().equals("")) {
                     Toast.makeText(LoginActivity.this, "Authentication failed", Toast.LENGTH_LONG).show();
                 }
 

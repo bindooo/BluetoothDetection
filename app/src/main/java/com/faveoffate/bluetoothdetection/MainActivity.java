@@ -7,6 +7,8 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -14,8 +16,13 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -29,10 +36,6 @@ public class MainActivity extends AppCompatActivity {
     TextView tv;
     String user;
     Context context;
-
-    Calendar c = Calendar.getInstance();
-    SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
-    SimpleDateFormat timeformat = new SimpleDateFormat("HH:mm:ss");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +72,15 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);                              //Pass the activity result up to the parent method
     }
 
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            scanLeDevice(true);
+            Log.d("Handler", "Task repetition running");
+            mHandler.postDelayed(mStatusChecker, 30000);
+        }
+    };
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -77,13 +89,13 @@ public class MainActivity extends AppCompatActivity {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE); //Create an intent to get permission to enable BT
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);                  //Fire the intent to start the activity that will return a result based on user response
         }
-
-        scanLeDevice(true);                                                             //Start scanning for BLE devices
+        mStatusChecker.run();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        mHandler.removeCallbacks(mStatusChecker);
         scanLeDevice(false);                                                            //Stop scanning for BLE devices
     }
 
@@ -120,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
                         scanLeDevice(false);
                         appendToTextView();
                         appendToTextFile();
+                        SendHTTPRequest sr = new SendHTTPRequest();
+                        sr.execute(tv);
                         //Toast.makeText(MainActivity.this, "Little nut found!", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -128,6 +142,9 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void appendToTextView() {
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat timeformat = new SimpleDateFormat("HH:mm:ss");
         String date = dateformat.format(c.getTime());
         String time = timeformat.format(c.getTime());
         String datetime = date + " " + time;
@@ -143,6 +160,55 @@ public class MainActivity extends AppCompatActivity {
             outputStreamWriter.close();
         } catch (IOException e) {
             Log.d("Error: ", e.toString());
+        }
+    }
+    private class SendHTTPRequest extends AsyncTask<TextView, Void, String> {
+        TextView t;
+        String responseStr = "fail";
+
+        @Override
+        protected String doInBackground(TextView... params) {
+            this.t = params[0];
+
+            Calendar c = Calendar.getInstance();
+            SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat timeformat = new SimpleDateFormat("HH:mm:ss");
+            String date = dateformat.format(c.getTime());
+            String time = timeformat.format(c.getTime());
+            Log.d("Current date ", date);
+            Log.d("Current time ", time);
+            String datetime = date + " " + time;
+
+            Uri.Builder builder = new Uri.Builder();
+            builder.scheme("http")
+                    .authority("balaton-team.com")
+                    .appendPath("bringa_send.php")
+                    .appendQueryParameter("id", "phu")
+                    .appendQueryParameter("ts", datetime);
+            String myUrl = builder.build().toString();
+
+            URL url;
+            try {
+                url = new URL(myUrl);
+                HttpURLConnection conn;
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                System.out.println("Response Code: " + conn.getResponseCode());
+                InputStream in;
+                in = new BufferedInputStream(conn.getInputStream());
+                responseStr = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(responseStr);
+            return responseStr;
+        }
+        @Override
+        protected void onPostExecute(String message) {
+            super.onPostExecute(message);
+                Toast.makeText(MainActivity.this, "Response from server: " + message, Toast.LENGTH_SHORT).show();
         }
     }
 }

@@ -128,7 +128,8 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     //tv.append(device.getName() + " " + device.getAddress() + "\n");
                     Log.d(TAG, "Found BLE Device: " + device.getAddress());                 //Debug information to log the devices as they are found
-                    if (device.getAddress().equals("D5:10:43:0B:99:2F")) {
+                    //if (device.getAddress().equals("D5:10:43:0B:99:2F")) {
+                    if (device.getAddress().equals("CE:82:41:09:2A:22")) {
                         scanLeDevice(false);
                         appendToTextView();
                         appendToTextFile();

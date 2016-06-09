@@ -28,6 +28,8 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
     private final static String TAG = MainActivity.class.getSimpleName();
+    private final static String BeaconMAC1 = "8C:8B:83:56:4E:D5";
+    private final static String BeaconMAC2 = "20:91:48:12:C3:81";
     private static final int REQUEST_ENABLE_BT = 1;
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
@@ -129,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                     //tv.append(device.getName() + " " + device.getAddress() + "\n");
                     Log.d(TAG, "Found BLE Device: " + device.getAddress());                 //Debug information to log the devices as they are found
                     //if (device.getAddress().equals("D5:10:43:0B:99:2F")) {
-                    if (device.getAddress().equals("CE:82:41:09:2A:22")) {
+                    if (device.getAddress().equals(BeaconMAC1) || device.getAddress().equals(BeaconMAC2)) {
                         scanLeDevice(false);
                         appendToTextView();
                         appendToTextFile();
@@ -209,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String message) {
             super.onPostExecute(message);
-                Toast.makeText(MainActivity.this, "Response from server: " + message, Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Response from server: " + message, Toast.LENGTH_SHORT).show();
         }
     }
 }

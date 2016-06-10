@@ -40,4 +40,14 @@
         android:text="START"
         android:textSize="30sp" />
 
+    <Button android:id="@+id/showTextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10sp"
+        android:layout_below="@id/startButton"
+        android:gravity="center"
+        android:layout_centerHorizontal="true"
+        android:text="SHOW TEXTFILE"
+        android:textSize="30sp" />
+
 </RelativeLayout>

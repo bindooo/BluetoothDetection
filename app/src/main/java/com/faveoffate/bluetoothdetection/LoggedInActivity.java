@@ -10,7 +10,7 @@ import android.widget.TextView;
 public class LoggedInActivity extends AppCompatActivity {
     public static final String EXTRA = "extra";
     TextView userTextView;
-    Button changeUserButton, startButton;
+    Button changeUserButton, startButton, showTextButton;
     String user;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +23,7 @@ public class LoggedInActivity extends AppCompatActivity {
         userTextView = (TextView)findViewById(R.id.userTextView);
         changeUserButton = (Button)findViewById(R.id.changeUserButton);
         startButton = (Button)findViewById(R.id.startButton);
+        showTextButton = (Button)findViewById(R.id.showTextButton);
 
         userTextView.setText(user);
 
@@ -38,6 +39,15 @@ public class LoggedInActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(LoggedInActivity.this, MainActivity.class);
+                i.putExtra(EXTRA, user);
+                startActivity(i);
+            }
+        });
+
+        showTextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(LoggedInActivity.this, ShowTextActivity.class);
                 i.putExtra(EXTRA, user);
                 startActivity(i);
             }

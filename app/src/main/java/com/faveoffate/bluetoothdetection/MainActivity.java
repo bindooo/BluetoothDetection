@@ -7,8 +7,8 @@ import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.AsyncTask;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -16,15 +16,16 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedInputStream;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.RequestParams;
+import com.loopj.android.http.TextHttpResponseHandler;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+import cz.msebera.android.httpclient.Header;
 
 public class MainActivity extends AppCompatActivity {
     private final static String TAG = MainActivity.class.getSimpleName();
@@ -32,12 +33,15 @@ public class MainActivity extends AppCompatActivity {
     private final static String BeaconMAC2 = "20:91:48:12:C3:81";
     private static final int REQUEST_ENABLE_BT = 1;
     private BluetoothAdapter mBluetoothAdapter;
-    private boolean mScanning;
     private Handler mHandler;
 
     TextView tv;
-    String user;
+    String user, date, time, datetime;
     Context context;
+    Calendar c;
+
+    SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat timeformat = new SimpleDateFormat("HH:mm:ss");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             scanLeDevice(true);
             Log.d("Handler", "Task repetition running");
-            mHandler.postDelayed(mStatusChecker, 30000);
+            mHandler.postDelayed(mStatusChecker, 5000);
         }
     };
 
@@ -106,19 +110,14 @@ public class MainActivity extends AppCompatActivity {
             mHandler.postDelayed(new Runnable() {                                       //Create delayed runnable that will stop the scan when it runs after SCAN_PERIOD milliseconds
                 @Override
                 public void run() {
-                    mScanning = false;                                                  //Indicate that we are not scanning - used for menu Stop/Scan context
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);                      //Stop scanning - callback method indicates which scan to stop
-                    invalidateOptionsMenu();                                            //Indicate that the options menu has changed, so should be recreated.
                 }
-            }, 10000);
+            }, 4000);
 
-            mScanning = true;                                                           //Indicate that we are busy scanning - used for menu Stop/Scan context
             mBluetoothAdapter.startLeScan(mLeScanCallback);                             //Start scanning with callback method to execute when a new BLE device is found
         } else {                                                                          //Method was called with option to stop scanning
-            mScanning = false;                                                          //Indicate that we are not scanning - used for menu Stop/Scan context
             mBluetoothAdapter.stopLeScan(mLeScanCallback);                              //Stop scanning - callback method indicates which scan to stop
         }
-        invalidateOptionsMenu();                                                        //Indicate that the options menu has changed, so should be recreated.
     }
 
     private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
@@ -128,90 +127,68 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {                                              //Create runnable that will add the device to the list adapter
                 @Override
                 public void run() {
-                    //tv.append(device.getName() + " " + device.getAddress() + "\n");
                     Log.d(TAG, "Found BLE Device: " + device.getAddress());                 //Debug information to log the devices as they are found
-                    //if (device.getAddress().equals("D5:10:43:0B:99:2F")) {
-                    if (device.getAddress().equals(BeaconMAC1) || device.getAddress().equals(BeaconMAC2)) {
+                    if (device.getAddress().equals(BeaconMAC1) || device.getAddress().equals(BeaconMAC2) || device.getAddress().equals("CE:82:41:09:2A:22")) {
                         scanLeDevice(false);
-                        appendToTextView();
-                        appendToTextFile();
-                        SendHTTPRequest sr = new SendHTTPRequest();
-                        sr.execute(tv);
-                        //Toast.makeText(MainActivity.this, "Little nut found!", Toast.LENGTH_SHORT).show();
+                        c = Calendar.getInstance();
+                        date = dateformat.format(c.getTime());
+                        time = timeformat.format(c.getTime());
+                        datetime = date + " " + time;
+                        Log.d(TAG, "Current datetime: " + datetime);
+                        appendToTextView(datetime);
+
+                        if (isNetworkAvailable()) {
+                            AsyncHttpClient client = new AsyncHttpClient();
+                            RequestParams params = new RequestParams();
+                            params.put("id", user);
+                            params.put("ts", datetime);
+                            client.get("http://www.balaton-team.com/bringa_send.php", params, new TextHttpResponseHandler() {
+                                        @Override
+                                        public void onSuccess(int statusCode, Header[] headers, String res) {
+                                            // called when response HTTP status is "200 OK"
+                                            Toast.makeText(MainActivity.this, "Request sent successfully!", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                        @Override
+                                        public void onFailure(int statusCode, Header[] headers, String res, Throwable t) {
+                                            // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+                                            Toast.makeText(MainActivity.this, "Error sent by the server!", Toast.LENGTH_SHORT).show();
+                                            appendToTextFile(datetime);
+                                        }
+                                    }
+                            );
+                        }
+                        else {
+                            Toast.makeText(MainActivity.this, "Offline, appending to file!", Toast.LENGTH_SHORT).show();
+                            appendToTextFile(datetime);
+                        }
+                        c.clear();
                     }
                 }
             });
         }
     };
 
-    private void appendToTextView() {
-        Calendar c = Calendar.getInstance();
-        SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat timeformat = new SimpleDateFormat("HH:mm:ss");
-        String date = dateformat.format(c.getTime());
-        String time = timeformat.format(c.getTime());
-        String datetime = date + " " + time;
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    private void appendToTextView(String datetime) {
         tv.append(user + " " + datetime);
         tv.append("\n");
     }
 
-    private void appendToTextFile() {
+    private void appendToTextFile(String datetime) {
         try {
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("timestamps.txt", Context.MODE_PRIVATE));
-            outputStreamWriter.write(tv.getText().toString());
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("timestamps.txt", Context.MODE_APPEND));
+            outputStreamWriter.write(user + " " + datetime);
             outputStreamWriter.write("\n");
             outputStreamWriter.close();
         } catch (IOException e) {
             Log.d("Error: ", e.toString());
-        }
-    }
-    private class SendHTTPRequest extends AsyncTask<TextView, Void, String> {
-        TextView t;
-        String responseStr = "fail";
-
-        @Override
-        protected String doInBackground(TextView... params) {
-            this.t = params[0];
-
-            Calendar c = Calendar.getInstance();
-            SimpleDateFormat dateformat = new SimpleDateFormat("yyyy-MM-dd");
-            SimpleDateFormat timeformat = new SimpleDateFormat("HH:mm:ss");
-            String date = dateformat.format(c.getTime());
-            String time = timeformat.format(c.getTime());
-            Log.d("Current date ", date);
-            Log.d("Current time ", time);
-            String datetime = date + " " + time;
-
-            Uri.Builder builder = new Uri.Builder();
-            builder.scheme("http")
-                    .authority("balaton-team.com")
-                    .appendPath("bringa_send.php")
-                    .appendQueryParameter("id", "phu")
-                    .appendQueryParameter("ts", datetime);
-            String myUrl = builder.build().toString();
-
-            URL url;
-            try {
-                url = new URL(myUrl);
-                HttpURLConnection conn;
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                System.out.println("Response Code: " + conn.getResponseCode());
-                InputStream in;
-                in = new BufferedInputStream(conn.getInputStream());
-                responseStr = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            System.out.println(responseStr);
-            return responseStr;
-        }
-        @Override
-        protected void onPostExecute(String message) {
-            super.onPostExecute(message);
-            Toast.makeText(MainActivity.this, "Response from server: " + message, Toast.LENGTH_SHORT).show();
         }
     }
 }

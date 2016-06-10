@@ -81,6 +81,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+
     protected void login() {
         if(isNetworkAvailable()) {
             SendLoginInfo sr = new SendLoginInfo(loginEditText, idEditText.getText().toString(), passwordEditText.getText().toString());
@@ -89,6 +90,7 @@ public class LoginActivity extends AppCompatActivity {
         else
             Toast.makeText(LoginActivity.this,"Please connect to the internet to proceed!",Toast.LENGTH_LONG).show();
     }
+
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

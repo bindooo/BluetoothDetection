@@ -40,14 +40,35 @@
         android:text="START"
         android:textSize="30sp" />
 
-    <Button android:id="@+id/showTextButton"
+    <Button android:id="@+id/syncButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="10sp"
         android:layout_below="@id/startButton"
         android:gravity="center"
         android:layout_centerHorizontal="true"
+        android:text="SYNCHRONIZE"
+        android:textSize="30sp"
+        android:stateListAnimator="@null" />
+
+    <Button android:id="@+id/showTextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10sp"
+        android:layout_below="@id/syncButton"
+        android:gravity="center"
+        android:layout_centerHorizontal="true"
         android:text="SHOW TEXTFILE"
-        android:textSize="30sp" />
+        android:textSize="30sp"
+        android:stateListAnimator="@null" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:indeterminate="true"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone" >
+    </ProgressBar>
 
 </RelativeLayout>

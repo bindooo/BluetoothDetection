@@ -39,6 +39,7 @@ public class ShowTextActivity extends AppCompatActivity {
                     text.append(line);
                     text.append('\n');
                 }
+                inputStream.close();
             }
         } catch (FileNotFoundException e) {
             Toast.makeText(getApplicationContext(), "File not found!", Toast.LENGTH_LONG).show();
